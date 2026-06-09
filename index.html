@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marktechpost · AI Research Paper Demos</title>
+<style>
+  :root{
+    --bg:#0a0a0f;
+    --card:rgba(255,255,255,0.04);
+    --border:rgba(255,255,255,0.08);
+    --text:#e9e9f1;
+    --muted:#9a9ab0;
+    --accent:#7c5cff;
+    --accent2:#19c8c0;
+    --grad:linear-gradient(120deg,#7c5cff 0%,#19c8c0 100%);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(1200px 700px at 80% -10%,rgba(124,92,255,0.18),transparent 60%),
+               radial-gradient(900px 600px at 0% 10%,rgba(25,200,192,0.14),transparent 55%),
+               var(--bg);
+    color:var(--text);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:72px 28px 96px}
+  .badge{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border:1px solid var(--border);border-radius:999px;background:var(--card);font-size:13px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:28px;backdrop-filter:blur(8px)}
+  .badge .dot{width:8px;height:8px;border-radius:50%;background:var(--accent2);box-shadow:0 0 12px var(--accent2)}
+  h1{font-size:clamp(34px,6vw,60px);line-height:1.05;font-weight:800;letter-spacing:-0.02em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:18px}
+  .sub{font-size:clamp(16px,2vw,20px);color:var(--muted);max-width:640px;margin-bottom:48px}
+  .table-card{border:1px solid var(--border);border-radius:20px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.015));box-shadow:0 30px 80px -40px rgba(124,92,255,0.5);backdrop-filter:blur(14px)}
+  table{width:100%;border-collapse:collapse}
+  thead th{text-align:left;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:20px 24px;background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border);font-weight:600}
+  tbody td{padding:24px;border-bottom:1px solid var(--border);vertical-align:top}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr{transition:background .2s ease}
+  tbody tr:hover{background:rgba(124,92,255,0.07)}
+  .num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent);font-weight:700;font-size:15px}
+  .paper-title{font-weight:700;font-size:17px;color:var(--text);display:block;margin-bottom:6px}
+  .paper-tag{font-size:12px;color:var(--muted)}
+  .links{display:flex;flex-wrap:wrap;gap:10px}
+  .pill{display:inline-flex;align-items:center;gap:6px;text-decoration:none;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;border:1px solid var(--border);color:var(--text);background:rgba(255,255,255,0.03);transition:transform .15s ease,border-color .15s ease,background .15s ease}
+  .pill:hover{transform:translateY(-2px);border-color:var(--accent);background:rgba(124,92,255,0.12)}
+  .pill.demo{background:var(--grad);border:none;color:#0a0a0f}
+  .pill.demo:hover{filter:brightness(1.08)}
+  footer{margin-top:54px;color:var(--muted);font-size:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  footer a{color:var(--accent2);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  @media(max-width:760px){
+    thead{display:none}
+    tbody td{display:block;border-bottom:none;padding:14px 20px}
+    tbody tr{display:block;border-bottom:1px solid var(--border);padding:10px 0}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="badge"><span class="dot"></span> Marktechpost · AI Research Paper Demos</span>
+    <h1>Papers, Demos &amp; Deep Dives</h1>
+    <p class="sub">A curated showcase of cutting-edge AI research — each paper paired with its source, our editorial breakdown, and a live interactive demo.</p>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:48px">#</th>
+            <th>Paper</th>
+            <th style="width:340px">Explore</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="num">01</span></td>
+            <td>
+              <span class="paper-title">How AI Agents Reshape Knowledge Work: Autonomy, Efficiency, and Scope</span>
+              <span class="paper-tag">Harvard &amp; Perplexity · Agentic AI &amp; Productivity</span>
+            </td>
+            <td>
+              <div class="links">
+                <a class="pill" href="https://arxiv.org/abs/2606.07489" target="_blank" rel="noopener">arXiv</a>
+                <a class="pill" href="https://www.marktechpost.com/2026/06/08/a-new-study-from-harvard-and-perplexity-finds-ai-agents-perform-26-minutes-of-autonomous-work-per-session-vs-33-seconds-for-search/" target="_blank" rel="noopener">Article</a>
+                <a class="pill demo" href="./agent-frontier-demo.html">Live Demo →</a>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <footer>
+      <span>Crafted by</span>
+      <a href="https://www.marktechpost.com" target="_blank" rel="noopener">Marktechpost</a>
+      <span>— more demos coming soon.</span>
+    </footer>
+  </div>
+</body>
+</html>
