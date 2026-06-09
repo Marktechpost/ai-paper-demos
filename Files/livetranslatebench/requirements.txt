@@ -1,0 +1,17 @@
+# Core harness
+numpy>=1.24
+soundfile>=0.12
+scipy>=1.10
+pyyaml>=6.0
+
+# Metrics
+jiwer>=3.0          # WER
+sacrebleu>=2.4      # BLEU / chrF
+
+# Gemini system under test
+google-genai>=1.0
+
+# --- Optional / heavy (install as needed) ---
+# unbabel-comet>=2.2   # learned translation quality (COMET); downloads a model
+# faster-whisper>=1.0  # cascade ASR baseline
+# transformers>=4.40   # cascade NMT baseline (e.g. NLLB-200)

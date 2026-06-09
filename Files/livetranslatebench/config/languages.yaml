@@ -1,0 +1,19 @@
+# Suggested evaluation pairs. Codes are BCP-47, matching the Live Translate
+# supported-language table. Mix high-resource, low-resource, and the known
+# hard cases (similar languages, distant scripts) so the leaderboard is honest.
+
+pairs:
+  # High-resource, distant scripts
+  - { source: es, target: en }
+  - { source: en, target: ja }
+  - { source: zh-Hans, target: en }
+  - { source: ar, target: en }
+
+  # Known language-detection stressors (similar languages)
+  - { source: pt-BR, target: es }   # Portuguese vs Spanish confusion
+  - { source: id, target: ms }      # Indonesian vs Malay
+
+  # Lower-resource targets
+  - { source: en, target: sw }      # Swahili
+  - { source: en, target: ta }      # Tamil
+  - { source: hi, target: en }      # Hindi

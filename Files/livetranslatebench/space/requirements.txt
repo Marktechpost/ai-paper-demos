@@ -1,0 +1,6 @@
+gradio==6.17.3
+
+# Pulls the benchmark package (and its deps: numpy, scipy, soundfile,
+# sacrebleu, jiwer, google-genai) straight from the repo. Pin to a tag/commit
+# for a reproducible Space build, e.g. ...LiveTranslateBench.git@v0.1.0
+git+https://github.com/Marktechpost/LiveTranslateBench.git

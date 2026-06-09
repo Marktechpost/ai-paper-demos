@@ -1,0 +1,14 @@
+# Default benchmark configuration.
+# SNR levels in dB; "clean" means no added noise.
+snr_levels: [clean, 20, 10, 5]
+
+# Systems to include in a full sweep (must exist in the registry).
+systems:
+  - gemini-3.5-live-translate
+  - whisper-nmt-tts-cascade   # requires --extras cascade and model wiring
+  - meta-seamless-streaming   # requires Seamless wiring
+
+# Real-time input contract (do not change without re-validating latency).
+input_sample_rate: 16000
+output_sample_rate: 24000
+chunk_ms: 100

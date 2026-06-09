@@ -1,0 +1,30 @@
+[project]
+name = "livetranslatebench"
+version = "0.1.0"
+description = "A reproducible benchmark for real-time speech-to-speech translation."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "numpy>=1.24",
+    "soundfile>=0.12",
+    "scipy>=1.10",
+    "pyyaml>=6.0",
+    "jiwer>=3.0",
+    "sacrebleu>=2.4",
+    "google-genai>=1.0",
+]
+
+[project.optional-dependencies]
+comet = ["unbabel-comet>=2.2"]
+cascade = ["faster-whisper>=1.0", "transformers>=4.40"]
+
+[project.scripts]
+ltbench = "livetranslatebench.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["livetranslatebench*"]
