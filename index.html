@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Agent Frontier — interactive model of Yang et al. (2026)</title>
+<meta name="description" content="When does delegating a task to an AI agent actually pay off? An interactive of the task-based economic model in 'How AI Agents Reshape Knowledge Work' (Yang, Zyskowski, Yonack, Ma — Perplexity x Harvard, 2026).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  #agf-root *{box-sizing:border-box;margin:0;padding:0}
+  #agf-root{
+    --bg:#111111; --panel:#181819; --panel2:#1d1d1f; --line:rgba(255,255,255,.09);
+    --green:#76B900; --green-dim:#4f7c00; --green-glow:rgba(118,185,0,.35);
+    --conv:#5fb7d8; --conv-dim:#2c6b82;
+    --entry:#76B900; --exit:#e8743b; --neutral:#cfcfca;
+    --ink:#ececea; --ink2:#a2a29d; --ink3:#6c6c68;
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--bg); color:var(--ink); font-family:var(--sans);
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+    max-width:1180px; margin:0 auto; padding:34px 26px 60px;
+  }
+  #agf-root .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--green);font-weight:500}
+  #agf-root h1{font-size:clamp(32px,5.2vw,52px);font-weight:800;letter-spacing:-.025em;line-height:1.02;margin:12px 0 10px}
+  #agf-root h1 .you{color:var(--green)}
+  #agf-root .lede{color:var(--ink2);font-size:clamp(15px,1.7vw,18px);max-width:660px}
+  #agf-root .cite{font-family:var(--mono);font-size:11.5px;color:var(--ink3);margin-top:14px;letter-spacing:.01em}
+  #agf-root .cite a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--line)}
+  #agf-root .cite a:hover{color:var(--green)}
+
+  #agf-root .grid{display:grid;grid-template-columns:312px 1fr;gap:18px;margin-top:30px}
+  #agf-root .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+  #agf-root .panel-h{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);font-weight:500;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  #agf-root .panel-h::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green-glow)}
+
+  /* presets */
+  #agf-root .presets{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px}
+  #agf-root .preset{font-family:var(--mono);font-size:11px;padding:7px 11px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);color:var(--ink2);cursor:pointer;transition:.15s}
+  #agf-root .preset:hover{border-color:var(--green-dim);color:var(--ink)}
+  #agf-root .preset.active{background:rgba(118,185,0,.12);border-color:var(--green);color:var(--green)}
+
+  /* controls */
+  #agf-root .ctrl{margin-bottom:17px}
+  #agf-root .ctrl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  #agf-root .ctrl-label{font-size:12.5px;color:var(--ink2);display:flex;align-items:center;gap:7px}
+  #agf-root .dot{width:9px;height:9px;border-radius:2px;flex:none}
+  #agf-root .dot.c{background:var(--conv)} #agf-root .dot.a{background:var(--green)} #agf-root .dot.b{background:var(--exit)}
+  #agf-root .num{font-family:var(--mono);font-size:13px;font-weight:500;width:62px;text-align:right;background:var(--panel2);border:1px solid var(--line);border-radius:6px;color:var(--ink);padding:3px 6px}
+  #agf-root .num:focus{outline:none;border-color:var(--green)}
+  #agf-root input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;background:#2a2a2c;outline:none}
+  #agf-root input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--ink);cursor:pointer;border:3px solid var(--bg);box-shadow:0 0 0 1px var(--line)}
+  #agf-root input[type=range].green::-webkit-slider-thumb{background:var(--green);box-shadow:0 0 10px var(--green-glow)}
+  #agf-root input[type=range].conv::-webkit-slider-thumb{background:var(--conv)}
+  #agf-root input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--ink);cursor:pointer;border:3px solid var(--bg)}
+  #agf-root input[type=range].green::-moz-range-thumb{background:var(--green)} #agf-root input[type=range].conv::-moz-range-thumb{background:var(--conv)}
+  #agf-root .ctrl-hint{font-size:11px;color:var(--ink3);margin-top:5px}
+
+  #agf-root .divider{height:1px;background:var(--line);margin:20px 0}
+
+  /* s* readout */
+  #agf-root .sstar{background:linear-gradient(180deg,rgba(118,185,0,.08),transparent);border:1px solid var(--green-dim);border-radius:12px;padding:16px;text-align:center}
+  #agf-root .sstar .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+  #agf-root .sstar .v{font-family:var(--mono);font-size:34px;font-weight:700;color:var(--green);line-height:1.1;margin:4px 0 2px;text-shadow:0 0 22px var(--green-glow)}
+  #agf-root .sstar .sub{font-size:11.5px;color:var(--ink2)}
+
+  /* toggle */
+  #agf-root .toggle-row{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding:12px 14px;background:var(--panel2);border:1px solid var(--line);border-radius:10px}
+  #agf-root .toggle-row .t-label{font-size:13px;font-weight:600}
+  #agf-root .toggle-row .t-sub{font-size:11px;color:var(--ink3)}
+  #agf-root .switch{position:relative;width:46px;height:26px;flex:none}
+  #agf-root .switch input{opacity:0;width:0;height:0}
+  #agf-root .slider-sw{position:absolute;inset:0;background:#2a2a2c;border-radius:30px;cursor:pointer;transition:.2s;border:1px solid var(--line)}
+  #agf-root .slider-sw::before{content:"";position:absolute;height:18px;width:18px;left:3px;top:3px;background:var(--ink2);border-radius:50%;transition:.2s}
+  #agf-root .switch input:checked + .slider-sw{background:rgba(118,185,0,.25);border-color:var(--green)}
+  #agf-root .switch input:checked + .slider-sw::before{transform:translateX(20px);background:var(--green);box-shadow:0 0 10px var(--green-glow)}
+
+  /* verify badge */
+  #agf-root .verify{display:flex;align-items:center;gap:9px;margin-top:16px;font-size:11.5px;font-family:var(--mono);padding:10px 12px;border-radius:9px;border:1px solid var(--line);color:var(--ink3);transition:.25s}
+  #agf-root .verify.ok{border-color:var(--green);color:var(--green);background:rgba(118,185,0,.07)}
+  #agf-root .verify .vmark{width:16px;height:16px;flex:none;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font-size:10px}
+
+  /* stage */
+  #agf-root .stage{display:flex;flex-direction:column;gap:18px;min-width:0}
+  #agf-root .narr{font-size:14.5px;line-height:1.6;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--green);border-radius:0 12px 12px 0;padding:15px 18px}
+  #agf-root .narr b{color:var(--green);font-weight:600}
+  #agf-root .narr .down{color:var(--exit)}
+
+  #agf-root svg{display:block;width:100%;height:auto;overflow:visible}
+  #agf-root .axis{stroke:var(--line);stroke-width:1}
+  #agf-root .axlabel{fill:var(--ink3);font-family:var(--mono);font-size:10px}
+  #agf-root .gridline{stroke:rgba(255,255,255,.045);stroke-width:1}
+
+  /* summary cards */
+  #agf-root .cards{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  #agf-root .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  #agf-root .card.post{border-color:var(--green-dim);background:linear-gradient(180deg,rgba(118,185,0,.05),var(--panel))}
+  #agf-root .card .ct{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink2);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  #agf-root .card.post .ct{color:var(--green)}
+  #agf-root .stat{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-top:1px solid var(--line)}
+  #agf-root .stat:first-of-type{border-top:none}
+  #agf-root .stat .sl{font-size:12.5px;color:var(--ink2)}
+  #agf-root .stat .sv{font-family:var(--mono);font-size:16px;font-weight:600}
+  #agf-root .stat.hero .sv{font-size:22px;color:var(--green)}
+  #agf-root .delta{font-family:var(--mono);font-size:11px;margin-left:7px}
+  #agf-root .delta.up{color:var(--green)} #agf-root .delta.dn{color:var(--exit)} #agf-root .delta.flat{color:var(--ink3)}
+
+  #agf-root .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+
+  /* task editor */
+  #agf-root .tasks-wrap{margin-top:18px}
+  #agf-root .table-scroll{overflow-x:auto}
+  #agf-root table{width:100%;border-collapse:collapse;font-size:13px}
+  #agf-root .table-scroll table{min-width:560px}
+  #agf-root th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);text-align:left;font-weight:500;padding:0 10px 10px}
+  #agf-root td{padding:6px 10px;border-top:1px solid var(--line)}
+  #agf-root .tnum{font-family:var(--mono);width:74px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;color:var(--ink);padding:5px 8px;font-size:13px}
+  #agf-root .tnum:focus{outline:none;border-color:var(--green)}
+  #agf-root .tname{font-family:var(--mono);color:var(--ink2);font-size:12px}
+  #agf-root .chip{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid var(--line);white-space:nowrap}
+  #agf-root .chip.agent{color:var(--green);border-color:var(--green-dim);background:rgba(118,185,0,.08)}
+  #agf-root .chip.conv{color:var(--conv);border-color:var(--conv-dim);background:rgba(95,183,216,.08)}
+  #agf-root .chip.entry{color:var(--green);border-color:var(--green)} 
+  #agf-root .chip.exit{color:var(--exit);border-color:var(--exit)}
+  #agf-root .chip.out{color:var(--ink3)}
+  #agf-root .xbtn{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:5px}
+  #agf-root .xbtn:hover{color:var(--exit);background:rgba(232,116,59,.1)}
+  #agf-root .addbtn{margin-top:12px;font-family:var(--mono);font-size:12px;background:var(--panel2);border:1px dashed var(--line);color:var(--ink2);padding:9px 14px;border-radius:8px;cursor:pointer}
+  #agf-root .addbtn:hover{border-color:var(--green);color:var(--green)}
+
+  #agf-root .foot{margin-top:34px;padding-top:20px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);line-height:1.7}
+  #agf-root .foot b{color:var(--ink2);font-weight:600}
+  #agf-root .foot a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--line)}
+  #agf-root .foot a:hover{color:var(--green)}
+  #agf-root .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:var(--ink2);font-family:var(--mono);margin-bottom:12px}
+  #agf-root .legend span{display:inline-flex;align-items:center;gap:6px}
+  #agf-root .lg{width:10px;height:10px;border-radius:50%;flex:none}
+
+  #agf-tip{position:fixed;pointer-events:none;z-index:50;background:#000;border:1px solid var(--green-dim);border-radius:8px;padding:9px 11px;font-family:var(--mono);font-size:11px;color:var(--ink);opacity:0;transition:opacity .12s;max-width:230px;box-shadow:0 8px 30px rgba(0,0,0,.6)}
+  #agf-tip .tt{color:var(--green);font-weight:600;margin-bottom:4px}
+  #agf-tip .tr{display:flex;justify-content:space-between;gap:14px;color:var(--ink2)}
+  #agf-tip .tr b{color:var(--ink)}
+
+  @media (prefers-reduced-motion:no-preference){
+    #agf-root .pulse{animation:agfpulse 2s ease-in-out infinite}
+    @keyframes agfpulse{0%,100%{opacity:.35;r:14}50%{opacity:0;r:22}}
+  }
+  @media(max-width:860px){
+    #agf-root .grid{grid-template-columns:1fr}
+    #agf-root .cards,#agf-root .two{grid-template-columns:1fr}
+  }
+  @media(max-width:640px){
+    #agf-root{padding:24px 16px 50px}
+    #agf-root .panel{padding:16px}
+  }
+</style>
+</head>
+<body>
+<div id="agf-root">
+  <div class="eyebrow">Interactive replication · Perplexity × Harvard, 2026</div>
+  <h1>The Agent <span class="you">Frontier</span></h1>
+  <p class="lede">When does handing a task to an autonomous agent actually pay off? Drag the costs and watch the model decide — the same task-based framework behind <i>How AI Agents Reshape Knowledge Work</i>, made playable.</p>
+  <div class="cite">Yang, Zyskowski, Yonack &amp; Ma (2026) · <a href="https://arxiv.org/abs/2606.07489" target="_blank" rel="noopener">arXiv:2606.07489</a> · model from §3 + Appendix B</div>
+
+  <div class="grid">
+    <!-- LEFT: controls -->
+    <div class="panel">
+      <div class="panel-h">Cost structure</div>
+      <div class="presets" id="presets"></div>
+
+      <div class="ctrl">
+        <div class="ctrl-top"><span class="ctrl-label"><span class="dot c"></span>Assistant fixed cost <i>f<sub>c</sub></i></span><input class="num" id="fc-n" type="number" step="0.5"></div>
+        <input class="num-hidden" type="range" id="fc" class="conv" min="0" max="20" step="0.5">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><span class="ctrl-label"><span class="dot c"></span>Assistant cost per step <i>m<sub>c</sub></i></span><input class="num" id="mc-n" type="number" step="0.5"></div>
+        <input type="range" id="mc" class="conv" min="0" max="30" step="0.5">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><span class="ctrl-label"><span class="dot a"></span>Agent fixed cost <i>f<sub>a</sub></i></span><input class="num" id="fa-n" type="number" step="0.5"></div>
+        <input type="range" id="fa" class="green" min="0" max="40" step="0.5">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-top"><span class="ctrl-label"><span class="dot a"></span>Agent cost per step <i>m<sub>a</sub></i></span><input class="num" id="ma-n" type="number" step="0.5"></div>
+        <input type="range" id="ma" class="green" min="0" max="20" step="0.5">
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="ctrl">
+        <div class="ctrl-top"><span class="ctrl-label">Budget <i>B</i></span><input class="num" id="B-n" type="number" step="1"></div>
+        <input type="range" id="B" min="0" max="320" step="1">
+        <div class="ctrl-hint">Total effort/spend the worker can deploy across all tasks.</div>
+      </div>
+
+      <div class="sstar">
+        <div class="k">Break-even step count s*</div>
+        <div class="v" id="sstar-v">1.06</div>
+        <div class="sub" id="sstar-sub">Agent wins above this many steps</div>
+      </div>
+
+      <div class="toggle-row">
+        <div><div class="t-label">Agent access</div><div class="t-sub">Toggle the second world on/off</div></div>
+        <label class="switch"><input type="checkbox" id="agent-on" checked><span class="slider-sw"></span></label>
+      </div>
+
+      <div class="verify" id="verify"><span class="vmark" id="vmark"></span><span id="verify-txt">Load the paper preset to verify</span></div>
+    </div>
+
+    <!-- RIGHT: stage -->
+    <div class="stage">
+      <div class="narr" id="narr"></div>
+
+      <div class="panel">
+        <div class="panel-h">The affordable frontier</div>
+        <div class="legend">
+          <span><span class="lg" style="background:var(--green)"></span>unlocked by agent</span>
+          <span><span class="lg" style="background:var(--neutral)"></span>done in both</span>
+          <span><span class="lg" style="background:var(--exit)"></span>dropped</span>
+          <span><span class="lg" style="background:#3a3a3c"></span>unaffordable</span>
+        </div>
+        <svg id="frontier" viewBox="0 0 760 420" role="img" aria-label="Task frontier: value versus step count"></svg>
+      </div>
+
+      <div class="cards">
+        <div class="card" id="card-pre">
+          <div class="ct"><span class="dot c"></span>Assistant only</div>
+          <div id="pre-stats"></div>
+        </div>
+        <div class="card post" id="card-post">
+          <div class="ct"><span class="dot a"></span>Assistant + Agent</div>
+          <div id="post-stats"></div>
+        </div>
+      </div>
+
+      <div class="two">
+        <div class="panel">
+          <div class="panel-h">Cost per task vs budget</div>
+          <svg id="bars" viewBox="0 0 360 300" role="img" aria-label="Cost per task under each mode"></svg>
+        </div>
+        <div class="panel">
+          <div class="panel-h">Where the surplus comes from</div>
+          <svg id="waterfall" viewBox="0 0 360 300" role="img" aria-label="Surplus decomposition waterfall"></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- task editor -->
+  <div class="panel tasks-wrap">
+    <div class="panel-h">Task portfolio</div>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Task</th><th>Steps (s)</th><th>Value (v)</th><th>Assistant</th><th>Agent</th><th>Status</th><th></th></tr></thead>
+      <tbody id="task-body"></tbody>
+    </table>
+    </div>
+    <button class="addbtn" id="add-task">+ add task</button>
+  </div>
+
+  <div class="foot">
+    <b>How it reads.</b> Each task takes <i>s</i> steps and is worth <i>v</i>. A mode's cost is <i>fixed + perStep×s</i>; the worker then solves a 0/1 knapsack — pick the highest-value set of tasks that fits the budget. Agents charge more to set up but less per step, so they only beat the assistant past the break-even <i>s* = (f<sub>a</sub>−f<sub>c</sub>)/(m<sub>c</sub>−m<sub>a</sub>)</i>. Turning agent access on can <b>expand the frontier</b> (Prop. 1–2) and lift total surplus (Prop. 3). The default preset reproduces the paper's Appendix B example exactly: surplus 33 → 253.<br><br>
+    <b>Caveat.</b> This is the conceptual model, not the paper's measured production data. It illustrates the forces; it does not predict your real costs. Built for an article on <a href="https://arxiv.org/abs/2606.07489" target="_blank" rel="noopener">arXiv:2606.07489</a>.
+  </div>
+</div>
+<div id="agf-tip"></div>
+
+<script>
+(function(){
+  "use strict";
+  const $=id=>document.getElementById(id);
+  const fmt=n=>{ n=Math.round(n*100)/100; return Number.isInteger(n)?String(n):n.toFixed(2).replace(/0$/,''); };
+  const money=n=>fmt(n);
+
+  // ---------- presets ----------
+  const PRESETS={
+    paper:{label:"Paper example",p:{fc:1,mc:17,fa:18,ma:1,B:87},
+      tasks:[{s:1,v:20},{s:2,v:50},{s:3,v:70},{s:10,v:200}], verifiable:true},
+    portfolio:{label:"Knowledge portfolio",p:{fc:2,mc:9,fa:22,ma:1.5,B:140},
+      tasks:[{s:1,v:14},{s:2,v:26},{s:3,v:40},{s:4,v:52},{s:6,v:78},{s:8,v:104},
+             {s:11,v:150},{s:14,v:205},{s:18,v:280},{s:24,v:400}]},
+    empirical:{label:"Empirical flavor",p:{fc:0.5,mc:2.05,fa:3,ma:0.16,B:60},
+      tasks:[{s:2,v:6},{s:4,v:13},{s:6,v:21},{s:9,v:34},{s:13,v:52},
+             {s:18,v:78},{s:25,v:118},{s:34,v:175}]}
+  };
+
+  let state={ p:{...PRESETS.paper.p}, tasks:PRESETS.paper.tasks.map(t=>({...t})),
+              agentOn:true, presetKey:"paper" };
+
+  // ---------- model (verified against Appendix B) ----------
+  function solve(tasks,p,agentAccess){
+    const n=tasks.length;
+    const cost=tasks.map(t=>{
+      const cc=p.fc+p.mc*t.s, ca=p.fa+p.ma*t.s;
+      if(agentAccess) return ca<cc?{c:ca,mode:'agent'}:{c:cc,mode:'conv'};
+      return {c:cc,mode:'conv'};
+    });
+    let best={W:-1,K:Infinity,mask:0};
+    const lim=1<<n;
+    for(let mask=0;mask<lim;mask++){
+      let W=0,K=0;
+      for(let j=0;j<n;j++) if(mask&(1<<j)){W+=tasks[j].v;K+=cost[j].c;}
+      if(K<=p.B+1e-9 && (W>best.W+1e-9 || (Math.abs(W-best.W)<1e-9 && K<best.K-1e-9))) best={W,K,mask};
+    }
+    const chosen=new Set();
+    for(let j=0;j<n;j++) if(best.mask&(1<<j)) chosen.add(j);
+    return {chosen,W:best.W<0?0:best.W,K:best.W<0?0:best.K,cost};
+  }
+  function decompose(tasks,pre,post){
+    let intensive=0,entry=0,exit=0;
+    for(let j=0;j<tasks.length;j++){
+      const ip=pre.chosen.has(j),io=post.chosen.has(j);
+      if(ip&&io) intensive+=(pre.cost[j].c-post.cost[j].c);
+      else if(!ip&&io) entry+=(tasks[j].v-post.cost[j].c);
+      else if(ip&&!io) exit+=(tasks[j].v-pre.cost[j].c);
+    }
+    return {intensive,entry,exit};
+  }
+  // individually-affordable value frontier endpoint (Prop. 1)
+  function frontierValue(tasks,p,agentAccess){
+    let best=0;
+    tasks.forEach(t=>{
+      const cc=p.fc+p.mc*t.s, ca=p.fa+p.ma*t.s;
+      const c=agentAccess?Math.min(cc,ca):cc;
+      if(c<=p.B+1e-9 && t.v>best) best=t.v;
+    });
+    return best;
+  }
+
+  // ---------- rendering ----------
+  const SVGNS="http://www.w3.org/2000/svg";
+  function el(tag,attrs){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
+  const tip=$("agf-tip");
+  function showTip(html,x,y){tip.innerHTML=html;tip.style.opacity=1;tip.style.left=(x+14)+"px";tip.style.top=(y+14)+"px";}
+  function hideTip(){tip.style.opacity=0;}
+
+  function statusOf(j,pre,post){
+    const ip=pre.chosen.has(j),io=post.chosen.has(j);
+    if(ip&&io)return"both"; if(!ip&&io)return"entry"; if(ip&&!io)return"exit"; return"out";
+  }
+
+  function recompute(){
+    const {p,tasks,agentOn}=state;
+    const pre=solve(tasks,p,false);
+    const post=solve(tasks,p,agentOn);
+    const Ppre=pre.W-pre.K, Ppost=post.W-post.K;
+    const sNum=p.fa-p.fc, sDen=p.mc-p.ma;
+    const sStar = sDen>0 ? sNum/sDen : null;
+    const d=decompose(tasks,pre,post);
+    const uPre=frontierValue(tasks,p,false), uPost=frontierValue(tasks,p,agentOn);
+    return {pre,post,Ppre,Ppost,sStar,sNum,sDen,d,uPre,uPost};
+  }
+
+  function render(){
+    const r=recompute();
+    renderSstar(r);
+    renderFrontier(r);
+    renderCards(r);
+    renderBars(r);
+    renderWaterfall(r);
+    renderTaskRows(r);
+    renderNarration(r);
+    renderVerify(r);
+  }
+
+  function renderSstar(r){
+    if(r.sStar===null || r.sStar<0){
+      $("sstar-v").textContent = r.sNum<=0 ? "0" : "∞";
+      $("sstar-sub").textContent = r.sNum<=0 ? "Agent is cheaper at every length" : "Agent never beats the assistant";
+    }else{
+      $("sstar-v").textContent=fmt(r.sStar);
+      $("sstar-sub").textContent="Agent wins above ~"+Math.ceil(r.sStar)+(Math.ceil(r.sStar)===1?" step":" steps");
+    }
+  }
+
+  function renderFrontier(r){
+    const svg=$("frontier"); svg.innerHTML="";
+    const W=760,H=420, ml=52,mr=24,mt=18,mb=40;
+    const plotW=W-ml-mr, plotH=H-mt-mb;
+    const maxS=Math.max(...state.tasks.map(t=>t.s),(r.sStar||0))*1.12+0.5;
+    const maxV=Math.max(...state.tasks.map(t=>t.v),1)*1.12;
+    const X=s=>ml+(s/maxS)*plotW;
+    const Y=v=>mt+plotH-(v/maxV)*plotH;
+
+    // territory shading at s*
+    if(r.sStar!==null && r.sStar>0 && r.sStar<maxS){
+      svg.appendChild(el("rect",{x:ml,y:mt,width:X(r.sStar)-ml,height:plotH,fill:"rgba(95,183,216,.05)"}));
+      svg.appendChild(el("rect",{x:X(r.sStar),y:mt,width:ml+plotW-X(r.sStar),height:plotH,fill:"rgba(118,185,0,.06)"}));
+    }
+    // gridlines
+    for(let i=0;i<=4;i++){
+      const gy=mt+plotH*i/4;
+      svg.appendChild(el("line",{x1:ml,y1:gy,x2:ml+plotW,y2:gy,class:"gridline"}));
+      const t=el("text",{x:ml-8,y:gy+3,class:"axlabel","text-anchor":"end"}); t.textContent=fmt(maxV*(1-i/4)); svg.appendChild(t);
+    }
+    // axes
+    svg.appendChild(el("line",{x1:ml,y1:mt+plotH,x2:ml+plotW,y2:mt+plotH,class:"axis"}));
+    svg.appendChild(el("line",{x1:ml,y1:mt,x2:ml,y2:mt+plotH,class:"axis"}));
+    const xl=el("text",{x:ml+plotW,y:H-8,class:"axlabel","text-anchor":"end"}); xl.textContent="task length (steps) →"; svg.appendChild(xl);
+    const yl=el("text",{x:ml-40,y:mt-6,class:"axlabel"}); yl.textContent="value"; svg.appendChild(yl);
+
+    // affordable value frontier lines (Prop. 1)
+    if(r.uPre>0){
+      svg.appendChild(el("line",{x1:ml,y1:Y(r.uPre),x2:ml+plotW,y2:Y(r.uPre),stroke:"var(--conv)","stroke-width":1.2,"stroke-dasharray":"5 5",opacity:.6}));
+    }
+    if(state.agentOn && r.uPost>r.uPre){
+      svg.appendChild(el("line",{x1:ml,y1:Y(r.uPost),x2:ml+plotW,y2:Y(r.uPost),stroke:"var(--green)","stroke-width":1.4,"stroke-dasharray":"6 4",opacity:.9}));
+      const fl=el("text",{x:ml+plotW-2,y:Y(r.uPost)-6,class:"axlabel","text-anchor":"end",fill:"var(--green)"}); fl.textContent="frontier ↑"; svg.appendChild(fl);
+    }
+    // s* line
+    if(r.sStar!==null && r.sStar>0 && r.sStar<maxS){
+      svg.appendChild(el("line",{x1:X(r.sStar),y1:mt,x2:X(r.sStar),y2:mt+plotH,stroke:"var(--green)","stroke-width":1.3,"stroke-dasharray":"3 4",opacity:.8}));
+      const sl=el("text",{x:X(r.sStar)+6,y:mt+12,class:"axlabel",fill:"var(--green)"}); sl.textContent="s*="+fmt(r.sStar); svg.appendChild(sl);
+    }
+
+    // points
+    state.tasks.forEach((t,j)=>{
+      const st=statusOf(j,r.pre,r.post);
+      const cx=X(t.s),cy=Y(t.v);
+      let fill,stroke,rad=7,op=1;
+      if(st==="entry"){fill="var(--green)";stroke="var(--green)";rad=8;
+        if(state.agentOn){const halo=el("circle",{cx,cy,r:14,fill:"none",stroke:"var(--green)","stroke-width":1.5,class:"pulse",opacity:.35});svg.appendChild(halo);}
+      }
+      else if(st==="both"){fill="rgba(207,207,202,.25)";stroke="var(--neutral)";}
+      else if(st==="exit"){fill="rgba(232,116,59,.18)";stroke="var(--exit)";}
+      else{fill="rgba(120,120,124,.12)";stroke="#56565a";op=.7;}
+      const c=el("circle",{cx,cy,r:rad,fill,stroke,"stroke-width":2,opacity:op,style:"cursor:pointer"});
+      const cc=state.p.fc+state.p.mc*t.s, ca=state.p.fa+state.p.ma*t.s;
+      const stTxt={entry:"unlocked by agent",both:"done in both",exit:"dropped",out:"unaffordable"}[st];
+      c.addEventListener("mousemove",e=>showTip(
+        `<div class="tt">Task ${j+1}</div>`+
+        `<div class="tr"><span>steps</span><b>${fmt(t.s)}</b></div>`+
+        `<div class="tr"><span>value</span><b>${fmt(t.v)}</b></div>`+
+        `<div class="tr"><span>assistant cost</span><b>${money(cc)}</b></div>`+
+        `<div class="tr"><span>agent cost</span><b>${money(ca)}</b></div>`+
+        `<div class="tr" style="margin-top:4px"><span>status</span><b>${stTxt}</b></div>`, e.clientX,e.clientY));
+      c.addEventListener("mouseleave",hideTip);
+      svg.appendChild(c);
+      const lab=el("text",{x:cx,y:cy-rad-5,class:"axlabel","text-anchor":"middle",fill:"var(--ink2)"}); lab.textContent="T"+(j+1); svg.appendChild(lab);
+    });
+  }
+
+  function statRow(label,val,delta){
+    const d=delta;
+    let dHtml="";
+    if(d!==undefined && d!==null){
+      const cls=d>0.0001?"up":(d<-0.0001?"dn":"flat");
+      const arrow=d>0.0001?"▲":(d<-0.0001?"▼":"–");
+      dHtml=`<span class="delta ${cls}">${arrow} ${d>0?"+":""}${fmt(d)}</span>`;
+    }
+    return `<div class="stat ${label==='Surplus Π'?'hero':''}"><span class="sl">${label}</span><span class="sv">${val}${dHtml}</span></div>`;
+  }
+  function renderCards(r){
+    const pre=r.pre,post=r.post;
+    const ratioPre=pre.K>0?pre.W/pre.K:0, ratioPost=post.K>0?post.W/post.K:0;
+    $("pre-stats").innerHTML =
+      statRow("Tasks done", pre.chosen.size)+
+      statRow("Total value W", fmt(pre.W))+
+      statRow("Total cost K", fmt(pre.K))+
+      statRow("Surplus Π", fmt(r.Ppre))+
+      statRow("Value / cost", fmt(ratioPre));
+    $("post-stats").innerHTML =
+      statRow("Tasks done", post.chosen.size, post.chosen.size-pre.chosen.size)+
+      statRow("Total value W", fmt(post.W), post.W-pre.W)+
+      statRow("Total cost K", fmt(post.K), post.K-pre.K)+
+      statRow("Surplus Π", fmt(r.Ppost), r.Ppost-r.Ppre)+
+      statRow("Value / cost", fmt(ratioPost), ratioPost-ratioPre);
+  }
+
+  function renderBars(r){
+    const svg=$("bars"); svg.innerHTML="";
+    const W=360,H=300,ml=44,mr=14,mt=10,mb=22;
+    const n=state.tasks.length;
+    const rowH=(H-mt-mb)/n;
+    const maxC=Math.max(state.p.B, ...state.tasks.map(t=>Math.max(state.p.fc+state.p.mc*t.s,state.p.fa+state.p.ma*t.s)))*1.05;
+    const X=c=>ml+(c/maxC)*(W-ml-mr);
+    // budget line
+    const bx=X(state.p.B);
+    svg.appendChild(el("line",{x1:bx,y1:mt-2,x2:bx,y2:H-mb+2,stroke:"var(--exit)","stroke-width":1.3,"stroke-dasharray":"4 3",opacity:.8}));
+    const bl=el("text",{x:bx,y:mt-3,class:"axlabel","text-anchor":"middle",fill:"var(--exit)"}); bl.textContent="B="+fmt(state.p.B); svg.appendChild(bl);
+    state.tasks.forEach((t,j)=>{
+      const cc=state.p.fc+state.p.mc*t.s, ca=state.p.fa+state.p.ma*t.s;
+      const y=mt+j*rowH;
+      const bh=Math.min(8,rowH/3);
+      const lab=el("text",{x:ml-6,y:y+rowH/2+3,class:"axlabel","text-anchor":"end"}); lab.textContent="T"+(j+1); svg.appendChild(lab);
+      // conv bar
+      svg.appendChild(el("rect",{x:ml,y:y+rowH/2-bh-1,width:Math.max(0,X(cc)-ml),height:bh,rx:2,fill:"var(--conv)",opacity:cc<=ca?1:.4}));
+      // agent bar
+      svg.appendChild(el("rect",{x:ml,y:y+rowH/2+1,width:Math.max(0,X(ca)-ml),height:bh,rx:2,fill:"var(--green)",opacity:(state.agentOn&&ca<cc)?1:.4}));
+    });
+    const lg=el("text",{x:ml,y:H-6,class:"axlabel"}); lg.textContent="assistant ▰  agent ▰  — shorter = cheaper"; svg.appendChild(lg);
+  }
+
+  function renderWaterfall(r){
+    const svg=$("waterfall"); svg.innerHTML="";
+    const W=360,H=300,ml=20,mr=14,mt=24,mb=40;
+    const steps=[
+      {label:"Π pre",val:r.Ppre,type:"base"},
+      {label:"+ savings",val:r.d.intensive,type:"up"},
+      {label:"+ new",val:r.d.entry,type:"up"},
+      {label:"− dropped",val:-r.d.exit,type:"down"},
+      {label:"Π post",val:r.Ppost,type:"base"}
+    ];
+    const allVals=[r.Ppre,r.Ppost,r.Ppre+r.d.intensive,r.Ppre+r.d.intensive+r.d.entry,0];
+    const maxV=Math.max(...allVals,1)*1.12; const minV=Math.min(...allVals,0);
+    const range=maxV-minV||1;
+    const Y=v=>mt+(maxV-v)/range*(H-mt-mb);
+    const bw=(W-ml-mr)/steps.length*0.6;
+    const gap=(W-ml-mr)/steps.length;
+    let running=0;
+    svg.appendChild(el("line",{x1:ml,y1:Y(0),x2:W-mr,y2:Y(0),class:"axis"}));
+    steps.forEach((s,i)=>{
+      const cx=ml+gap*i+gap*0.2;
+      let top,bot,fill;
+      if(s.type==="base"){top=Y(Math.max(0,s.val));bot=Y(Math.min(0,s.val));fill="rgba(207,207,202,.3)";running=s.val;}
+      else{const start=running;running+=s.val;top=Y(Math.max(start,running));bot=Y(Math.min(start,running));fill=s.type==="up"?"var(--green)":"var(--exit)";}
+      const h=Math.max(1,bot-top);
+      svg.appendChild(el("rect",{x:cx,y:top,width:bw,height:h,rx:2,fill:fill,opacity:s.type==="base"?.55:.9}));
+      const vlab=el("text",{x:cx+bw/2,y:top-5,class:"axlabel","text-anchor":"middle",fill:s.type==="down"?"var(--exit)":(s.type==="up"?"var(--green)":"var(--ink2)")});
+      vlab.textContent=(s.val>0&&s.type!=="base"?"+":"")+fmt(s.val); svg.appendChild(vlab);
+      const llab=el("text",{x:cx+bw/2,y:H-mb+15,class:"axlabel","text-anchor":"middle"}); llab.textContent=s.label; svg.appendChild(llab);
+      // connector
+      if(i<steps.length-1 && s.type!=="base"){
+        svg.appendChild(el("line",{x1:cx,y1:Y(running),x2:cx+gap,y2:Y(running),stroke:"var(--line)","stroke-width":1,"stroke-dasharray":"2 2"}));
+      } else if(i<steps.length-1 && s.type==="base" && i===0){
+        svg.appendChild(el("line",{x1:cx+bw,y1:Y(running),x2:ml+gap+gap*0.2,y2:Y(running),stroke:"var(--line)","stroke-width":1,"stroke-dasharray":"2 2"}));
+      }
+    });
+  }
+
+  function renderTaskRows(r){
+    const tb=$("task-body"); tb.innerHTML="";
+    state.tasks.forEach((t,j)=>{
+      const cc=state.p.fc+state.p.mc*t.s, ca=state.p.fa+state.p.ma*t.s;
+      const st=statusOf(j,r.pre,r.post);
+      const stMap={entry:["entry","unlocked"],both:["both","both"],exit:["exit","dropped"],out:["out","skipped"]};
+      const cheaper=(state.agentOn&&ca<cc)?"agent":"conv";
+      const tr=document.createElement("tr");
+      tr.innerHTML=
+        `<td class="tname">T${j+1}</td>`+
+        `<td><input class="tnum" type="number" min="0" step="1" data-j="${j}" data-f="s" value="${t.s}"></td>`+
+        `<td><input class="tnum" type="number" min="0" step="1" data-j="${j}" data-f="v" value="${t.v}"></td>`+
+        `<td><span class="chip ${cheaper==='conv'?'conv':''}">${money(cc)}</span></td>`+
+        `<td><span class="chip ${cheaper==='agent'?'agent':''}">${money(ca)}</span></td>`+
+        `<td><span class="chip ${stMap[st][0]}">${stMap[st][1]}</span></td>`+
+        `<td><button class="xbtn" data-del="${j}" aria-label="remove task">×</button></td>`;
+      tb.appendChild(tr);
+    });
+  }
+
+  function renderNarration(r){
+    const entryN=[...r.post.chosen].filter(j=>!r.pre.chosen.has(j)).length;
+    const exitN=[...r.pre.chosen].filter(j=>!r.post.chosen.has(j)).length;
+    const wPct=r.pre.W>0?Math.round((r.post.W-r.pre.W)/r.pre.W*100):null;
+    let s;
+    if(!state.agentOn){
+      s=`Agent access is <b>off</b>. With the assistant alone the worker completes <b>${r.pre.chosen.size}</b> task(s) for ${fmt(r.pre.W)} of value and ${fmt(r.Ppre)} surplus. Flip the switch to see what the agent unlocks.`;
+    } else if(entryN===0 && Math.abs(r.Ppost-r.Ppre)<0.01){
+      s=`At these costs the agent changes nothing — every task already sits below the break-even of <b>${r.sStar!==null?fmt(r.sStar):'—'}</b> steps, so the assistant stays cheaper. Raise the per-step costs or add a longer task to see the agent take over.`;
+    } else {
+      s=`Turning on the agent `+(entryN>0?`unlocks <b>${entryN}</b> task(s) that the budget couldn't reach before`:`reshuffles the work`)+`. Total value `+(wPct!==null?`climbs from ${fmt(r.pre.W)} to ${fmt(r.post.W)} (<b>${wPct>=0?'+':''}${wPct}%</b>)`:`reaches ${fmt(r.post.W)}`)+`, and surplus moves from ${fmt(r.Ppre)} to <b>${fmt(r.Ppost)}</b>`+(exitN>0?`, while <span class="down">${exitN}</span> short task(s) drop off`:``)+`.`;
+    }
+    $("narr").innerHTML=s;
+  }
+
+  function renderVerify(r){
+    const v=$("verify"),vt=$("verify-txt"),vm=$("vmark");
+    const isPaper = state.presetKey==="paper" &&
+      Math.round(r.Ppre)===33 && Math.round(r.Ppost)===253 &&
+      state.tasks.length===4 && Math.abs((r.sStar||0)-1.0625)<1e-6;
+    if(isPaper){
+      v.classList.add("ok"); vm.textContent="✓";
+      vt.textContent="Matches Appendix B: surplus 33 → 253";
+    } else {
+      v.classList.remove("ok"); vm.textContent="";
+      vt.textContent = state.presetKey==="paper" ? "Edited — restore paper values to verify" : "Load the paper preset to verify";
+    }
+  }
+
+  // ---------- wiring ----------
+  function syncInputs(){
+    ["fc","mc","fa","ma","B"].forEach(k=>{ $(k).value=state.p[k]; $(k+"-n").value=state.p[k]; });
+    $("agent-on").checked=state.agentOn;
+    document.querySelectorAll(".preset").forEach(b=>b.classList.toggle("active",b.dataset.k===state.presetKey));
+  }
+  function clampParam(k,val){
+    const max={fc:20,mc:30,fa:40,ma:20,B:320}[k];
+    val=Math.max(0,Math.min(max,val)); if(isNaN(val))val=0; return val;
+  }
+  function setParam(k,val){ state.p[k]=clampParam(k,parseFloat(val)); state.presetKey="custom"; syncInputs(); render(); }
+
+  ["fc","mc","fa","ma","B"].forEach(k=>{
+    $(k).addEventListener("input",e=>setParam(k,e.target.value));
+    $(k+"-n").addEventListener("input",e=>setParam(k,e.target.value));
+  });
+  $("agent-on").addEventListener("change",e=>{state.agentOn=e.target.checked;render();});
+
+  // presets
+  const pc=$("presets");
+  Object.entries(PRESETS).forEach(([k,v])=>{
+    const b=document.createElement("button"); b.className="preset"; b.dataset.k=k; b.textContent=v.label;
+    b.addEventListener("click",()=>{
+      state.p={...v.p}; state.tasks=v.tasks.map(t=>({...t})); state.presetKey=k; state.agentOn=true;
+      syncInputs(); render();
+    });
+    pc.appendChild(b);
+  });
+
+  // task editing (delegated)
+  $("task-body").addEventListener("input",e=>{
+    const inp=e.target.closest(".tnum"); if(!inp)return;
+    const j=+inp.dataset.j,f=inp.dataset.f; let val=parseFloat(inp.value);
+    if(isNaN(val))val=0; if(val<0)val=0;
+    state.tasks[j][f]=val; state.presetKey="custom"; syncInputs();
+    // re-render charts but don't rebuild the row being typed in
+    const r=recompute(); renderSstar(r);renderFrontier(r);renderCards(r);renderBars(r);renderWaterfall(r);renderNarration(r);renderVerify(r);
+    // update only chips in this row
+    renderTaskChips(r);
+  });
+  function renderTaskChips(r){
+    document.querySelectorAll("#task-body tr").forEach((tr,j)=>{
+      if(j>=state.tasks.length)return;
+      const t=state.tasks[j];
+      const cc=state.p.fc+state.p.mc*t.s, ca=state.p.fa+state.p.ma*t.s;
+      const st=statusOf(j,r.pre,r.post);
+      const stMap={entry:["entry","unlocked"],both:["both","both"],exit:["exit","dropped"],out:["out","skipped"]};
+      const cheaper=(state.agentOn&&ca<cc)?"agent":"conv";
+      const chips=tr.querySelectorAll(".chip");
+      if(chips.length>=3){
+        chips[0].textContent=money(cc); chips[0].className="chip "+(cheaper==='conv'?'conv':'');
+        chips[1].textContent=money(ca); chips[1].className="chip "+(cheaper==='agent'?'agent':'');
+        chips[2].textContent=stMap[st][1]; chips[2].className="chip "+stMap[st][0];
+      }
+    });
+  }
+  $("task-body").addEventListener("click",e=>{
+    const del=e.target.closest("[data-del]"); if(!del)return;
+    const j=+del.dataset.del; if(state.tasks.length<=1)return;
+    state.tasks.splice(j,1); state.presetKey="custom"; syncInputs(); render();
+  });
+  $("add-task").addEventListener("click",()=>{
+    if(state.tasks.length>=16)return;
+    const last=state.tasks[state.tasks.length-1]||{s:1,v:10};
+    state.tasks.push({s:Math.round(last.s*1.4)+1,v:Math.round(last.v*1.4)+5});
+    state.presetKey="custom"; syncInputs(); render();
+  });
+
+  // init
+  syncInputs(); render();
+})();
+
+// --- auto-height for iframe embedding (posts its height to the parent page) ---
+(function(){
+  if(window.parent===window) return; // only when embedded
+  function postHeight(){
+    var h=document.getElementById("agf-root").scrollHeight+24;
+    window.parent.postMessage({agfHeight:h},"*");
+  }
+  window.addEventListener("load",postHeight);
+  window.addEventListener("resize",postHeight);
+  if(window.ResizeObserver){ new ResizeObserver(postHeight).observe(document.getElementById("agf-root")); }
+  setTimeout(postHeight,300); setTimeout(postHeight,1200);
+})();
+</script>
+</body>
+</html>
