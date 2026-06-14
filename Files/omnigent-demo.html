@@ -1,0 +1,496 @@
+<!-- ============================================================
+     OMNIGENT META-HARNESS — INTERACTIVE CONCEPT DEMO
+     Self-contained. Paste into a WordPress Custom HTML block.
+     No external dependencies. All CSS scoped to #omnigent-demo.
+     ============================================================ -->
+<div id="omnigent-demo">
+
+  <div class="og-wrap">
+
+    <!-- Header -->
+    <header class="og-head">
+      <div class="og-brand">
+        <span class="og-logo">◇</span>
+        <div>
+          <h2 class="og-title">Omnigent <span>Meta-Harness</span></h2>
+          <p class="og-sub">One orchestrator. Many harnesses. One governed session.</p>
+        </div>
+      </div>
+      <span class="og-badge">Interactive concept demo</span>
+    </header>
+
+    <!-- Controls -->
+    <section class="og-controls">
+      <div class="og-field og-task">
+        <label>1 · Pick a task for the orchestrator (Polly)</label>
+        <div class="og-chips" id="og-tasks">
+          <button class="og-chip og-active" data-task="Build a REST endpoint with tests">Build REST endpoint + tests</button>
+          <button class="og-chip" data-task="Refactor the auth module">Refactor auth module</button>
+          <button class="og-chip" data-task="Add a caching layer to the API">Add caching layer</button>
+        </div>
+      </div>
+
+      <div class="og-field og-policies">
+        <label>2 · Policies (control layer)</label>
+        <div class="og-toggles">
+          <label class="og-toggle">
+            <input type="checkbox" id="og-pol-cost" checked>
+            <span class="og-track"></span>
+            <span class="og-tlabel">Cost budget — pause at <b>$3.00</b></span>
+          </label>
+          <label class="og-toggle">
+            <input type="checkbox" id="og-pol-shell" checked>
+            <span class="og-track"></span>
+            <span class="og-tlabel">Approve <code>git push</code> after npm install</span>
+          </label>
+        </div>
+      </div>
+
+      <button id="og-run" class="og-run">▶ Run session</button>
+    </section>
+
+    <!-- Interface tabs -->
+    <nav class="og-tabs" id="og-tabs">
+      <button class="og-tab og-active" data-if="terminal">⌘ Terminal</button>
+      <button class="og-tab" data-if="web">▤ Web UI</button>
+      <button class="og-tab" data-if="mobile">▢ Mobile</button>
+      <span class="og-sync">same session · in sync</span>
+    </nav>
+
+    <!-- Stage -->
+    <section class="og-stage" id="og-stage" data-if="terminal">
+
+      <!-- Cost meter -->
+      <div class="og-meter">
+        <div class="og-meter-row">
+          <span>Session LLM cost</span>
+          <span class="og-cost" id="og-cost">$0.00</span>
+        </div>
+        <div class="og-bar"><div class="og-bar-fill" id="og-bar"></div></div>
+      </div>
+
+      <!-- Orchestrator log -->
+      <div class="og-orch">
+        <div class="og-orch-head"><span class="og-dot"></span> Orchestrator · Polly <em>(writes no code; plans &amp; delegates)</em></div>
+        <div class="og-orch-log" id="og-orch-log">
+          <div class="og-line og-muted">Idle. Pick a task and press “Run session”.</div>
+        </div>
+      </div>
+
+      <!-- Sub-agent columns -->
+      <div class="og-grid" id="og-grid">
+        <div class="og-col" data-agent="claude">
+          <div class="og-col-head"><span class="og-pill og-claude">Claude Code</span><span class="og-state" id="og-st-claude">waiting</span></div>
+          <div class="og-col-log" id="og-log-claude"></div>
+        </div>
+        <div class="og-col" data-agent="codex">
+          <div class="og-col-head"><span class="og-pill og-codex">Codex</span><span class="og-state" id="og-st-codex">waiting</span></div>
+          <div class="og-col-log" id="og-log-codex"></div>
+        </div>
+        <div class="og-col" data-agent="pi">
+          <div class="og-col-head"><span class="og-pill og-pi">Pi</span><span class="og-state" id="og-st-pi">waiting</span></div>
+          <div class="og-col-log" id="og-log-pi"></div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="og-result" id="og-result" hidden>
+        <span class="og-check">✓</span>
+        <div>
+          <b>Ready to merge.</b>
+          <span id="og-result-detail">3 diffs cross-reviewed by a different vendor than the writer.</span>
+        </div>
+      </div>
+
+    </section>
+
+    <p class="og-foot">
+      Illustrative simulation of the Omnigent workflow — no live models are called.
+      Learn more at <a href="https://omnigent.ai" target="_blank" rel="noopener">omnigent.ai</a> ·
+      <a href="https://github.com/omnigent-ai/omnigent" target="_blank" rel="noopener">GitHub</a> · Apache 2.0 · Alpha.
+    </p>
+
+    <!-- Marktechpost brand bar -->
+    <a class="og-brandbar" href="https://www.marktechpost.com" target="_blank" rel="noopener">
+      <span class="og-mtp-dot"></span>
+      <span class="og-mtp-name">Marktechpost</span>
+      <span class="og-mtp-sep">·</span>
+      <span class="og-mtp-tag">AI Dev &amp; Research Media</span>
+    </a>
+
+    <!-- Policy / approval modal -->
+    <div class="og-modal" id="og-modal" hidden>
+      <div class="og-modal-card">
+        <div class="og-modal-icon" id="og-modal-icon">⏸</div>
+        <h3 id="og-modal-title">Policy paused the session</h3>
+        <p id="og-modal-body">Reason goes here.</p>
+        <div class="og-modal-actions">
+          <button class="og-btn-ghost" id="og-modal-deny">Deny / stop</button>
+          <button class="og-btn-go" id="og-modal-approve">Approve &amp; continue</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <style>
+  /* ===== scoped reset ===== */
+  #omnigent-demo *{box-sizing:border-box!important;margin:0;padding:0}
+  #omnigent-demo{
+    background:#0b0b0c!important;color:#e8e8ea!important;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif!important;
+    border:1px solid #1f1f22!important;border-radius:16px!important;
+    padding:0!important;line-height:1.5!important;
+    max-width:920px!important;margin:0 auto!important;overflow:hidden!important;
+  }
+  #omnigent-demo hr,#omnigent-demo p:empty,#omnigent-demo del,#omnigent-demo s{display:none!important}
+  #omnigent-demo .og-wrap{padding:22px!important}
+  #omnigent-demo code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;
+    background:#16161a!important;color:#9fd356!important;padding:1px 5px!important;border-radius:5px!important;font-size:.85em!important}
+
+  /* ===== header ===== */
+  #omnigent-demo .og-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;flex-wrap:wrap!important;margin-bottom:18px!important}
+  #omnigent-demo .og-brand{display:flex!important;align-items:center!important;gap:13px!important}
+  #omnigent-demo .og-logo{font-size:30px!important;color:#76B900!important;line-height:1!important;text-shadow:0 0 18px rgba(118,185,0,.5)!important}
+  #omnigent-demo .og-title{font-size:21px!important;font-weight:700!important;color:#fff!important;letter-spacing:-.3px!important}
+  #omnigent-demo .og-title span{color:#76B900!important;font-weight:600!important}
+  #omnigent-demo .og-sub{font-size:12.5px!important;color:#8a8a90!important;margin-top:2px!important}
+  #omnigent-demo .og-badge{font-size:11px!important;color:#76B900!important;border:1px solid #2f3a14!important;background:#13160a!important;padding:5px 10px!important;border-radius:999px!important;white-space:nowrap!important}
+
+  /* ===== controls ===== */
+  #omnigent-demo .og-controls{display:grid!important;grid-template-columns:1fr 1fr auto!important;gap:16px!important;align-items:end!important;
+    background:#101012!important;border:1px solid #1d1d21!important;border-radius:12px!important;padding:16px!important;margin-bottom:14px!important}
+  #omnigent-demo .og-field > label{display:block!important;font-size:11px!important;text-transform:uppercase!important;letter-spacing:.6px!important;color:#74747c!important;margin-bottom:9px!important;font-weight:600!important}
+  #omnigent-demo .og-chips{display:flex!important;flex-wrap:wrap!important;gap:7px!important}
+  #omnigent-demo .og-chip{font-size:12.5px!important;color:#cfcfd4!important;background:#17171b!important;border:1px solid #26262c!important;
+    padding:7px 11px!important;border-radius:8px!important;cursor:pointer!important;transition:.15s!important;font-family:inherit!important}
+  #omnigent-demo .og-chip:hover{border-color:#3a3a42!important;color:#fff!important}
+  #omnigent-demo .og-chip.og-active{background:#13160a!important;border-color:#76B900!important;color:#9fd356!important}
+  #omnigent-demo .og-toggles{display:flex!important;flex-direction:column!important;gap:9px!important}
+  #omnigent-demo .og-toggle{display:flex!important;align-items:center!important;gap:9px!important;cursor:pointer!important;font-size:12.5px!important;color:#cfcfd4!important}
+  #omnigent-demo .og-toggle input{position:absolute!important;opacity:0!important;width:0!important;height:0!important}
+  #omnigent-demo .og-track{width:34px!important;height:19px!important;border-radius:999px!important;background:#26262c!important;position:relative!important;flex:0 0 auto!important;transition:.18s!important}
+  #omnigent-demo .og-track::after{content:"";position:absolute!important;top:2px!important;left:2px!important;width:15px!important;height:15px!important;border-radius:50%!important;background:#76767e!important;transition:.18s!important}
+  #omnigent-demo .og-toggle input:checked + .og-track{background:#2f4d05!important}
+  #omnigent-demo .og-toggle input:checked + .og-track::after{transform:translateX(15px)!important;background:#76B900!important}
+  #omnigent-demo .og-tlabel b{color:#9fd356!important}
+  #omnigent-demo .og-run{align-self:end!important;background:#76B900!important;color:#0b0b0c!important;border:none!important;font-weight:700!important;
+    font-size:14px!important;padding:13px 20px!important;border-radius:10px!important;cursor:pointer!important;font-family:inherit!important;transition:.15s!important;white-space:nowrap!important}
+  #omnigent-demo .og-run:hover{background:#88d100!important;box-shadow:0 0 22px rgba(118,185,0,.35)!important}
+  #omnigent-demo .og-run:disabled{background:#2a2a2e!important;color:#6a6a72!important;cursor:not-allowed!important;box-shadow:none!important}
+
+  /* ===== tabs ===== */
+  #omnigent-demo .og-tabs{display:flex!important;align-items:center!important;gap:6px!important;margin-bottom:0!important;border-bottom:1px solid #1d1d21!important;padding-bottom:0!important}
+  #omnigent-demo .og-tab{background:none!important;border:none!important;border-bottom:2px solid transparent!important;color:#8a8a90!important;
+    font-size:13px!important;padding:9px 13px!important;cursor:pointer!important;font-family:inherit!important;transition:.15s!important}
+  #omnigent-demo .og-tab:hover{color:#cfcfd4!important}
+  #omnigent-demo .og-tab.og-active{color:#fff!important;border-bottom-color:#76B900!important}
+  #omnigent-demo .og-sync{margin-left:auto!important;font-size:11px!important;color:#5a5a62!important}
+
+  /* ===== stage ===== */
+  #omnigent-demo .og-stage{background:#0e0e10!important;border:1px solid #1d1d21!important;border-top:none!important;
+    border-radius:0 0 12px 12px!important;padding:16px!important}
+  #omnigent-demo .og-stage[data-if="mobile"]{max-width:420px!important;margin:0 auto!important;border-top:1px solid #1d1d21!important;border-radius:12px!important;margin-top:10px!important}
+  #omnigent-demo .og-stage[data-if="web"] .og-orch,#omnigent-demo .og-stage[data-if="web"] .og-col{border-radius:12px!important}
+
+  /* cost meter */
+  #omnigent-demo .og-meter{margin-bottom:14px!important}
+  #omnigent-demo .og-meter-row{display:flex!important;justify-content:space-between!important;font-size:12px!important;color:#8a8a90!important;margin-bottom:6px!important}
+  #omnigent-demo .og-cost{color:#fff!important;font-family:ui-monospace,monospace!important;font-weight:700!important}
+  #omnigent-demo .og-bar{height:6px!important;background:#1a1a1e!important;border-radius:999px!important;overflow:hidden!important}
+  #omnigent-demo .og-bar-fill{height:100%!important;width:0%!important;background:linear-gradient(90deg,#76B900,#b6f000)!important;transition:width .35s ease!important}
+  #omnigent-demo .og-bar-fill.og-over{background:linear-gradient(90deg,#ff7a45,#ff5c5c)!important}
+
+  /* orchestrator */
+  #omnigent-demo .og-orch{background:#101013!important;border:1px solid #20202a!important;border-radius:10px!important;margin-bottom:14px!important;overflow:hidden!important}
+  #omnigent-demo .og-orch-head{font-size:12.5px!important;color:#cfcfd4!important;padding:10px 13px!important;border-bottom:1px solid #1d1d21!important;display:flex!important;align-items:center!important;gap:8px!important}
+  #omnigent-demo .og-orch-head em{color:#6a6a72!important;font-style:normal!important;font-size:11.5px!important}
+  #omnigent-demo .og-dot{width:8px!important;height:8px!important;border-radius:50%!important;background:#76B900!important;box-shadow:0 0 9px #76B900!important;flex:0 0 auto!important}
+  #omnigent-demo .og-orch-log{padding:11px 13px!important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace!important;font-size:12.5px!important;max-height:150px!important;overflow-y:auto!important}
+  #omnigent-demo .og-line{padding:2px 0!important;color:#c4c4cc!important;animation:ogfade .3s ease!important;height:auto!important}
+  #omnigent-demo .og-muted{color:#5a5a62!important}
+  #omnigent-demo .og-line b{color:#9fd356!important;font-weight:600!important}
+  @keyframes ogfade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+  /* sub-agent grid */
+  #omnigent-demo .og-grid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:11px!important}
+  #omnigent-demo .og-col{background:#101013!important;border:1px solid #20202a!important;border-radius:10px!important;overflow:hidden!important;min-height:120px!important}
+  #omnigent-demo .og-col-head{display:flex!important;align-items:center!important;justify-content:space-between!important;padding:9px 11px!important;border-bottom:1px solid #1d1d21!important}
+  #omnigent-demo .og-pill{font-size:11.5px!important;font-weight:700!important;padding:3px 8px!important;border-radius:6px!important}
+  #omnigent-demo .og-claude{background:#3a221a!important;color:#e8916b!important}
+  #omnigent-demo .og-codex{background:#0f2e26!important;color:#3fd6ab!important}
+  #omnigent-demo .og-pi{background:#1e1f3a!important;color:#9aa0ff!important}
+  #omnigent-demo .og-state{font-size:10.5px!important;color:#6a6a72!important;text-transform:uppercase!important;letter-spacing:.4px!important}
+  #omnigent-demo .og-state.og-working{color:#76B900!important}
+  #omnigent-demo .og-state.og-done{color:#9fd356!important}
+  #omnigent-demo .og-state.og-review{color:#e8a93b!important}
+  #omnigent-demo .og-col-log{padding:10px 11px!important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace!important;font-size:11.5px!important;color:#a8a8b0!important;min-height:70px!important}
+  #omnigent-demo .og-col-log .og-line{padding:1.5px 0!important}
+
+  /* result */
+  #omnigent-demo .og-result{display:none!important;align-items:center!important;gap:12px!important;margin-top:14px!important;
+    background:#10180a!important;border:1px solid #2f4d05!important;border-radius:10px!important;padding:13px 15px!important;font-size:13.5px!important;animation:ogfade .4s ease!important}
+  #omnigent-demo .og-result.og-show{display:flex!important}
+  #omnigent-demo .og-result b{color:#fff!important}
+  #omnigent-demo .og-result span#og-result-detail{color:#9aa78c!important;display:block!important;font-size:12px!important;margin-top:2px!important}
+  #omnigent-demo .og-check{font-size:22px!important;color:#76B900!important}
+
+  #omnigent-demo .og-foot{font-size:11.5px!important;color:#5a5a62!important;margin-top:14px!important;text-align:center!important}
+  #omnigent-demo .og-foot a{color:#9fd356!important;text-decoration:none!important}
+  #omnigent-demo .og-foot a:hover{text-decoration:underline!important}
+
+  /* marktechpost brand bar */
+  #omnigent-demo .og-brandbar{display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;
+    margin-top:14px!important;padding:11px 14px!important;background:#0e0e10!important;border:1px solid #1d1d21!important;
+    border-radius:10px!important;text-decoration:none!important;transition:.18s!important}
+  #omnigent-demo .og-brandbar:hover{border-color:#2f3a14!important;background:#101206!important}
+  #omnigent-demo .og-mtp-dot{width:9px!important;height:9px!important;border-radius:50%!important;flex:0 0 auto!important;
+    background:#76B900!important;box-shadow:0 0 10px rgba(118,185,0,.6)!important}
+  #omnigent-demo .og-mtp-name{font-size:13.5px!important;font-weight:700!important;color:#fff!important;letter-spacing:-.2px!important}
+  #omnigent-demo .og-brandbar:hover .og-mtp-name{color:#9fd356!important}
+  #omnigent-demo .og-mtp-sep{color:#3a3a42!important;font-size:13px!important}
+  #omnigent-demo .og-mtp-tag{font-size:11.5px!important;color:#74747c!important;text-transform:uppercase!important;letter-spacing:.6px!important}
+
+  /* modal */
+  #omnigent-demo .og-modal{position:absolute!important;inset:0!important;background:rgba(5,5,6,.82)!important;display:none!important;align-items:center!important;justify-content:center!important;z-index:30!important;backdrop-filter:blur(2px)!important;border-radius:16px!important;animation:ogfade .2s ease!important}
+  #omnigent-demo .og-modal.og-show{display:flex!important}
+  #omnigent-demo{position:relative!important}
+  #omnigent-demo .og-modal-card{background:#121215!important;border:1px solid #2a2a32!important;border-radius:14px!important;padding:22px!important;max-width:380px!important;width:90%!important;text-align:center!important;box-shadow:0 20px 60px rgba(0,0,0,.6)!important}
+  #omnigent-demo .og-modal-icon{font-size:30px!important;margin-bottom:8px!important}
+  #omnigent-demo .og-modal-card h3{font-size:16px!important;color:#fff!important;margin-bottom:8px!important}
+  #omnigent-demo .og-modal-card p{font-size:13px!important;color:#a8a8b0!important;margin-bottom:18px!important;line-height:1.55!important}
+  #omnigent-demo .og-modal-card p code{font-size:12px!important}
+  #omnigent-demo .og-modal-actions{display:flex!important;gap:9px!important}
+  #omnigent-demo .og-btn-ghost,#omnigent-demo .og-btn-go{flex:1!important;padding:11px!important;border-radius:9px!important;font-size:13px!important;font-weight:600!important;cursor:pointer!important;font-family:inherit!important;border:1px solid transparent!important}
+  #omnigent-demo .og-btn-ghost{background:#1a1a1e!important;border-color:#2a2a32!important;color:#cfcfd4!important}
+  #omnigent-demo .og-btn-ghost:hover{border-color:#ff5c5c!important;color:#ff8b8b!important}
+  #omnigent-demo .og-btn-go{background:#76B900!important;color:#0b0b0c!important}
+  #omnigent-demo .og-btn-go:hover{background:#88d100!important}
+
+  /* ===== mobile ===== */
+  @media (max-width:640px){
+    #omnigent-demo .og-controls{grid-template-columns:1fr!important}
+    #omnigent-demo .og-run{width:100%!important}
+    #omnigent-demo .og-grid{grid-template-columns:1fr!important}
+    #omnigent-demo .og-title{font-size:19px!important}
+    #omnigent-demo .og-sync{display:none!important}
+    #omnigent-demo .og-orch-log{font-size:12px!important}
+    #omnigent-demo .og-mtp-tag{display:none!important}
+  }
+  </style>
+
+  <script>
+  (function(){
+    function ogInit(){
+    var root = document.getElementById('omnigent-demo');
+    if(!root || root.dataset.init) return;
+    root.dataset.init = "1";
+
+    var $ = function(id){ return root.querySelector(id); };
+    var sleep = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
+
+    var state = { task: "Build a REST endpoint with tests", running:false, cost:0, budget:3.0 };
+
+    // ----- task chips -----
+    root.querySelectorAll('#og-tasks .og-chip').forEach(function(c){
+      c.addEventListener('click', function(){
+        if(state.running) return;
+        root.querySelectorAll('#og-tasks .og-chip').forEach(function(x){ x.classList.remove('og-active'); });
+        c.classList.add('og-active');
+        state.task = c.dataset.task;
+      });
+    });
+
+    // ----- interface tabs -----
+    root.querySelectorAll('#og-tabs .og-tab').forEach(function(t){
+      t.addEventListener('click', function(){
+        root.querySelectorAll('#og-tabs .og-tab').forEach(function(x){ x.classList.remove('og-active'); });
+        t.classList.add('og-active');
+        $('#og-stage').setAttribute('data-if', t.dataset.if);
+      });
+    });
+
+    // ----- helpers -----
+    function orch(html, bold){
+      var log = $('#og-orch-log');
+      var d = document.createElement('div');
+      d.className = 'og-line' + (bold ? '' : '');
+      d.innerHTML = html;
+      log.appendChild(d);
+      log.scrollTop = log.scrollHeight;
+    }
+    function clearOrch(){ $('#og-orch-log').innerHTML = ''; }
+    function agentLog(agent, html){
+      var log = $('#og-log-' + agent);
+      var d = document.createElement('div');
+      d.className = 'og-line';
+      d.innerHTML = html;
+      log.appendChild(d);
+      log.scrollTop = log.scrollHeight;
+    }
+    function clearAgents(){
+      ['claude','codex','pi'].forEach(function(a){ $('#og-log-'+a).innerHTML=''; setState(a,'waiting',''); });
+    }
+    function setState(agent, txt, cls){
+      var el = $('#og-st-' + agent);
+      el.textContent = txt;
+      el.className = 'og-state' + (cls ? ' ' + cls : '');
+    }
+    function addCost(amt){
+      state.cost += amt;
+      $('#og-cost').textContent = '$' + state.cost.toFixed(2);
+      var pct = Math.min(100, (state.cost / state.budget) * 100);
+      var fill = $('#og-bar');
+      fill.style.width = pct + '%';
+      if(state.cost >= state.budget){ fill.classList.add('og-over'); }
+    }
+
+    // ----- modal gate (returns true = approve, false = deny) -----
+    function ask(icon, title, body){
+      return new Promise(function(resolve){
+        $('#og-modal-icon').textContent = icon;
+        $('#og-modal-title').textContent = title;
+        $('#og-modal-body').innerHTML = body;
+        $('#og-modal').classList.add('og-show');
+        var ap = $('#og-modal-approve'), dn = $('#og-modal-deny');
+        function done(val){
+          $('#og-modal').classList.remove('og-show');
+          ap.removeEventListener('click', onA);
+          dn.removeEventListener('click', onD);
+          resolve(val);
+        }
+        function onA(){ done(true); }
+        function onD(){ done(false); }
+        ap.addEventListener('click', onA);
+        dn.addEventListener('click', onD);
+      });
+    }
+
+    var WORK = {
+      claude: ['read repo structure', 'draft handler + route', 'write unit tests', 'run test suite → green'],
+      codex:  ['scaffold project files', 'implement serializer', 'add edge-case tests', 'run lint → clean'],
+      pi:     ['map data model', 'wire validation layer', 'add integration test', 'benchmark latency']
+    };
+
+    // ----- main run -----
+    async function run(){
+      if(state.running) return;
+      state.running = true;
+      state.cost = 0;
+      $('#og-cost').textContent = '$0.00';
+      $('#og-bar').style.width = '0%';
+      $('#og-bar').classList.remove('og-over');
+      $('#og-result').classList.remove('og-show');
+      $('#og-run').disabled = true;
+      $('#og-run').textContent = '● Running…';
+      clearOrch(); clearAgents();
+
+      var costOn  = $('#og-pol-cost').checked;
+      var shellOn = $('#og-pol-shell').checked;
+
+      orch('<b>plan</b> · task: “' + state.task + '”');
+      await sleep(500);
+      orch('<b>plan</b> · split into 3 parallel git worktrees');
+      await sleep(500);
+      orch('<b>delegate</b> · Claude Code, Codex, and Pi each take a slice');
+      await sleep(400);
+
+      // parallel-ish streaming across the three agents
+      ['claude','codex','pi'].forEach(function(a){ setState(a,'working','og-working'); });
+      var maxSteps = 4;
+      for(var i=0;i<maxSteps;i++){
+        for(var a=0;a<3;a++){
+          var agent = ['claude','codex','pi'][a];
+          agentLog(agent, '› ' + WORK[agent][i]);
+          addCost(0.28 + Math.random()*0.12);
+          await sleep(230);
+
+          // cost policy gate
+          if(costOn && state.cost >= state.budget && !state.costAsked){
+            state.costAsked = true;
+            orch('⏸ <b>policy</b> · cost budget hit $' + state.budget.toFixed(2));
+            var ok = await ask('⏸', 'Cost budget reached',
+              'This session has spent <b style="color:#9fd356">$' + state.cost.toFixed(2) +
+              '</b>, hitting the <code>cost_budget</code> threshold of $' + state.budget.toFixed(2) +
+              '. Continue running the sub-agents?');
+            if(!ok){ return abort('Stopped at the cost budget. No diffs were merged.'); }
+            orch('▶ <b>approved</b> · budget raised, continuing');
+          }
+        }
+      }
+
+      ['claude','codex','pi'].forEach(function(a){ setState(a,'done','og-done'); });
+      await sleep(300);
+
+      // risky action gate: git push after npm install
+      orch('<b>integrate</b> · Codex installed a package from npm');
+      await sleep(350);
+      if(shellOn){
+        orch('⏸ <b>policy</b> · approval required before <code>git push</code>');
+        var pushOk = await ask('🛡️', 'Approve risky action',
+          'A sub-agent installed a new <b>npm</b> package, then requested <code>git push</code>. ' +
+          'Your contextual policy requires human approval for a push that follows a fresh install. Approve?');
+        if(!pushOk){ return abort('Push denied by policy. Work stays local for review.'); }
+        orch('▶ <b>approved</b> · push allowed once');
+      } else {
+        orch('· no shell policy set — push proceeds automatically');
+      }
+      await sleep(300);
+
+      // cross-vendor review
+      orch('<b>review</b> · route each diff to a different-vendor reviewer');
+      var reviews = [
+        ['claude','Codex reviews Claude’s diff'],
+        ['codex','Pi reviews Codex’s diff'],
+        ['pi','Claude reviews Pi’s diff']
+      ];
+      for(var r=0;r<reviews.length;r++){
+        setState(reviews[r][0],'review','og-review');
+        agentLog(reviews[r][0], '✓ ' + reviews[r][1] + ' → approved');
+        addCost(0.16);
+        await sleep(360);
+      }
+      ['claude','codex','pi'].forEach(function(a){ setState(a,'done','og-done'); });
+
+      orch('<b>done</b> · 3 diffs reviewed · total ' + $('#og-cost').textContent + ' · ready to merge');
+      $('#og-result-detail').textContent =
+        '3 diffs cross-reviewed by a different vendor than the writer · session cost ' + $('#og-cost').textContent + '.';
+      $('#og-result').classList.add('og-show');
+
+      finish();
+    }
+
+    function abort(msg){
+      orch('✕ <b style="color:#ff8b8b">halted</b> · ' + msg);
+      ['claude','codex','pi'].forEach(function(a){
+        var el = $('#og-st-'+a);
+        if(el.textContent==='working'){ setState(a,'paused',''); }
+      });
+      finish();
+    }
+
+    function finish(){
+      state.running = false;
+      state.costAsked = false;
+      $('#og-run').disabled = false;
+      $('#og-run').textContent = '▶ Run session';
+    }
+
+    $('#og-run').addEventListener('click', run);
+    } // end ogInit
+
+    // Robust bootstrap: run now if the DOM is ready, otherwise wait.
+    // Also retries briefly in case WordPress injects the markup after the script.
+    function ogBoot(tries){
+      if(document.getElementById('omnigent-demo')){ ogInit(); return; }
+      if((tries||0) < 20){ setTimeout(function(){ ogBoot((tries||0)+1); }, 100); }
+    }
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', function(){ ogBoot(0); });
+    } else {
+      ogBoot(0);
+    }
+  })();
+  </script>
+
+</div>
