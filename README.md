@@ -1,6 +1,6 @@
-# ai-paper-demos
+# Find trending product and AI models playgrounds with demo functionalities
 
-AI Research Paper Demos — a curated collection of interactive demos for cutting-edge AI research papers.
+AI playground — a curated collection of interactive demos for cutting-edge AI research papers, Frameworks, LLMs etc.
 
 🌐 **Live showcase:** [ai-paper-demos.vercel.app](https://ai-paper-demos.vercel.app)
 
